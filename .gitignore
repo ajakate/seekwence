@@ -8,6 +8,8 @@ log/
 .shadow-cljs/
 node_modules/
 modules/
+data/
+*.dylib
 
 # IntelliJ
 *.iml
