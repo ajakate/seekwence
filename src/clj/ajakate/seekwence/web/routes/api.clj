@@ -1,6 +1,7 @@
 (ns ajakate.seekwence.web.routes.api
   (:require
     [ajakate.seekwence.web.controllers.health :as health]
+   [ajakate.seekwence.web.controllers.game :as game]
     [ajakate.seekwence.web.middleware.exception :as exception]
     [ajakate.seekwence.web.middleware.formats :as formats]
     [integrant.core :as ig]
@@ -10,26 +11,29 @@
     [reitit.ring.middleware.parameters :as parameters]
     [reitit.swagger :as swagger]))
 
-(def route-data
-  {:coercion   malli/coercion
-   :muuntaja   formats/instance
-   :swagger    {:id ::api}
-   :middleware [;; query-params & form-params
-                parameters/parameters-middleware
+(defn route-data
+  [opts]
+  (merge
+   opts
+   {:coercion   malli/coercion
+    :muuntaja   formats/instance
+    :swagger    {:id ::api}
+    :middleware [;; query-params & form-params
+                 parameters/parameters-middleware
                   ;; content-negotiation
-                muuntaja/format-negotiate-middleware
+                 muuntaja/format-negotiate-middleware
                   ;; encoding response body
-                muuntaja/format-response-middleware
+                 muuntaja/format-response-middleware
                   ;; exception handling
-                coercion/coerce-exceptions-middleware
+                 coercion/coerce-exceptions-middleware
                   ;; decoding request body
-                muuntaja/format-request-middleware
+                 muuntaja/format-request-middleware
                   ;; coercing response bodys
-                coercion/coerce-response-middleware
+                 coercion/coerce-response-middleware
                   ;; coercing request parameters
-                coercion/coerce-request-middleware
+                 coercion/coerce-request-middleware
                   ;; exception handling
-                exception/wrap-exception]})
+                 exception/wrap-exception]}))
 
 ;; Routes
 (defn api-routes [_opts]
@@ -38,7 +42,10 @@
            :swagger {:info {:title "ajakate.seekwence API"}}
            :handler (swagger/create-swagger-handler)}}]
    ["/health"
-    {:get health/healthcheck!}]])
+    {:get health/healthcheck!}]
+   ["/create"
+    ;; TODO: change to POST
+    {:get game/create!}]])
 
 (derive :reitit.routes/api :reitit/routes)
 
@@ -46,4 +53,4 @@
   [_ {:keys [base-path]
       :or   {base-path ""}
       :as   opts}]
-  [base-path route-data (api-routes opts)])
+  [base-path (route-data opts) (api-routes opts)])

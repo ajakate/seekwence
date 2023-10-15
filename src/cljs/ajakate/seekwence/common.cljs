@@ -2,7 +2,7 @@
   (:require
    [reagent.core :as r]
    [re-frame.core :as rf]
-   [day8.re-frame.http-fx] 
+   [day8.re-frame.http-fx]
    [reitit.frontend.controllers :as rfc]))
 
 (rf/reg-event-db

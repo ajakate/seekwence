@@ -1,6 +1,7 @@
 (ns ajakate.seekwence.core
   (:require
    [ajakate.seekwence.common]
+   [ajakate.seekwence.events]
    [reagent.core :as r]
    [re-frame.core :as rf]
    [day8.re-frame.http-fx]
@@ -17,12 +18,14 @@
 (defn home-page []
   [:div.flex.flex-col.justify-center
    [:h1.m-1 "Welcome to Seekwence!"]
-   [:button "Create a New Game"]
-   [:button "Join Existing Game"]])
+   [:button.m-5
+    {:on-click #(rf/dispatch [:create-game])}
+    "Create a New Game"]
+   [:button.m-5 "Join Existing Game"]])
 
-(defn new-page []
+(defn play-page []
   [:div.flex.flex-col.justify-center
-   [:h1.m-1 "play page! test"]
+   [:h1.m-1 "play page! test O 0"]
    [:button "Create a New Game"]
    [:button "Join Existing Game"]])
 
@@ -38,8 +41,8 @@
    [["/" {:name        :home
           :view        #'home-page
           :controllers [{:start (fn [_] ())}]}]
-    ["/play" {:name     :new
-              :view   #'new-page
+    ["/play" {:name     :play
+              :view   #'play-page
               :controllers [{:start (fn [_] ())}]}]]))
 
 (defn start-router! []
