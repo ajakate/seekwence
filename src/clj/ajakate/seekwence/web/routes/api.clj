@@ -44,8 +44,8 @@
    ["/health"
     {:get health/healthcheck!}]
    ["/create"
-    ;; TODO: change to POST
-    {:get game/create!}]])
+    {:post {:parameters {:body {:name string?}}
+            :handler game/create!}}]])
 
 (derive :reitit.routes/api :reitit/routes)
 

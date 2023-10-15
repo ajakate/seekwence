@@ -5,7 +5,7 @@
    [reagent.core :as r]
    [re-frame.core :as rf]
    [day8.re-frame.http-fx]
-   [reitit.frontend.easy :as rfe] 
+   [reitit.frontend.easy :as rfe]
    [reitit.core :as reitit]
    [reagent.dom :as d]))
 
@@ -13,15 +13,24 @@
 ;; Views
 
 (defn page []
-  (when-let [page @(rf/subscribe [:common/page])] [page]))
+  (when-let [page @(rf/subscribe [:common/page])]
+    [:div.flex.justify-center>div.max-w-5xl
+     [page]]))
 
 (defn home-page []
-  [:div.flex.flex-col.justify-center
-   [:h1.m-1 "Welcome to Seekwence!"]
-   [:button.m-5
-    {:on-click #(rf/dispatch [:create-game])}
-    "Create a New Game"]
-   [:button.m-5 "Join Existing Game"]])
+  (let [draft_name (r/atom nil)]
+    (fn []
+      [:div.flex.flex-col.justify-center
+       [:p.m-5.font-bold.text-xl "Welcome to Seekwence!"]
+       [:input
+        {:type "text"
+         :placeholder "sk8hkr69"
+         :on-change #(reset! draft_name (.. % -target -value))
+         :value @draft_name}]
+       [:button.m-5
+        {:on-click #(rf/dispatch [:create-game @draft_name])}
+        "Create a New Game"]
+       [:button.m-5 "Join Existing Game"]])))
 
 (defn play-page []
   [:div.flex.flex-col.justify-center

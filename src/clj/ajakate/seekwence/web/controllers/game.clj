@@ -21,10 +21,17 @@
         (recur (generate-room-code))))))
 
 (defn create!
-  [req]
-  (let [node (get-in req [:reitit.core/match :data :db])
-        room-code (safe-room-code node)]
+  [{{:keys [name]} :body-params :as request}]
+  (let [node (get-in request [:reitit.core/match :data :db])
+        room-code (safe-room-code node)
+        player-id (random-uuid)]
     (xt/submit-tx node [[::xt/put
-                         {:xt/id room-code}]])
+                         {:xt/id room-code
+                          :game/players [player-id]}]
+                        [::xt/put
+                         {:xt/id player-id
+                          :player/name name}]])
     (http-response/ok
-     {:game/id room-code})))
+     {:game/id room-code
+      :player/id player-id
+      :player/name name})))

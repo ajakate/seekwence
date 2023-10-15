@@ -8,9 +8,11 @@
 
 (rf/reg-event-fx
  :create-game
- (fn []
-   {:http-xhrio {:method          :get
-                 :uri             "/api/create"
+ (fn [_ [_ name]]
+   {:http-xhrio {:method           :post
+                 :uri              "/api/create"
+                 :params           {:name name}
+                 :format           (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:set-active-game]}}))
 

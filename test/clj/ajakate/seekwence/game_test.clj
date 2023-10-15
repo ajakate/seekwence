@@ -7,7 +7,9 @@
 
 (deftest test-game-create
   (testing "GET /api/create it should return a 200"
-    (let [response ((:handler/ring (utils/system-state)) (mock/request :get "/api/create"))]
+    (let [response ((:handler/ring (utils/system-state))
+                    (-> (mock/request :post "/api/create")
+                        (mock/json-body {:name "ajay"})))]
       (is (= 200 (:status response)))
       (is (re-matches
            #"^[A-Z0-9]{4}$"
