@@ -27,6 +27,7 @@
         player-id (random-uuid)]
     (xt/submit-tx node [[::xt/put
                          {:xt/id room-code
+                          :game/state :init
                           :game/players [player-id]}]
                         [::xt/put
                          {:xt/id player-id
