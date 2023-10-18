@@ -13,7 +13,8 @@
     ;; Routes
     [ajakate.seekwence.web.routes.api]
     
-    [ajakate.seekwence.web.routes.pages])
+    [ajakate.seekwence.web.routes.pages] 
+    [ajakate.seekwence.web.routes.ws])
   (:gen-class))
 
 ;; log uncaught exceptions in threads

@@ -7,6 +7,7 @@
    [day8.re-frame.http-fx]
    [reitit.frontend.easy :as rfe]
    [reitit.core :as reitit]
+   [ajakate.seekwence.ws :as ws]
    [reagent.dom :as d]))
 
 ;; -------------------------
@@ -30,13 +31,17 @@
        [:button.m-5
         {:on-click #(rf/dispatch [:create-game @draft_name])}
         "Create a New Game"]
-       [:button.m-5 "Join Existing Game"]])))
+       [:button.m-5
+        {:on-click #(ws/send-message! [:guestbook/echo "Hallo Server"])}
+        "Join Existing Game"]])))
 
 (defn play-page []
-  [:div.flex.flex-col.justify-center
-   [:h1.m-1 "play page! test O 0"]
-   [:button "Create a New Game"]
-   [:button "Join Existing Game"]])
+  (let [game-code @(rf/subscribe [:game/id])]
+    [:div.flex.flex-co
+     [:h1.m-1 (str "Welcome to Game " game-code)]
+     [:button.m-5
+      {:on-click #(ws/send-message! [:guestbook/echo "Hallo Server"])}
+      "click me"]]))
 
 ;; -------------------------
 ;; Initialize app
@@ -60,11 +65,15 @@
    navigate!
    {}))
 
+(defn ws-handler [resp]
+  (println "response: " resp))
+
 (defn ^:dev/after-load mount-root []
   (rf/clear-subscription-cache!)
   (d/render [#'page] (.getElementById js/document "app")))
 
 (defn ^:export ^:dev/once init! []
+  (ws/start-router! ws-handler)
   (start-router!)
   (rf/dispatch-sync [:init-db])
   (mount-root))

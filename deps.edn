@@ -24,7 +24,8 @@
            io.github.kit-clj/kit-undertow {:mvn/version "1.0.6"}
            io.github.kit-clj/kit-xtdb {:mvn/version "1.0.3"}
            selmer/selmer {:mvn/version "1.12.50"}
-           luminus/ring-ttl-session {:mvn/version "0.3.3"}}
+           luminus/ring-ttl-session {:mvn/version "0.3.3"}
+           com.taoensso/sente {:mvn/version "1.17.0"}}
  :aliases {:build {:deps {io.github.clojure/tools.build {:git/sha "24f2894"
                                                          :git/tag "v0.9.5"
                                                          :git/url "https://github.com/clojure/tools.build.git"}

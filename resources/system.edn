@@ -62,4 +62,9 @@
            :test {}
            :prod {}}
  :reitit.routes/pages {:base-path "",
-                       :env #ig/ref :system/env}}
+                       :env #ig/ref :system/env}
+ :sente/connection {}
+ :sente/router {:connection #ig/ref :sente/connection}
+ :reitit.routes/ws {:base-path "/ws",
+                    :env #ig/ref :system/env,
+                    :connection #ig/ref :sente/connection}}

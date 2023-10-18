@@ -19,10 +19,15 @@
 (rf/reg-event-fx
  :set-active-game
  (fn [{:keys [db]} [_ resp]]
-   {:db (assoc db :resp (:game/id resp))
+   {:db (merge db resp)
     :fx [[:dispatch [:redirect-to-play]]]}))
 
 (rf/reg-event-fx
  :redirect-to-play
  (fn [_ [_]]
    (rfe/push-state :play)))
+
+(rf/reg-sub
+ :game/id
+ (fn [db _]
+   (-> db :game/id)))
