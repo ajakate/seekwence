@@ -54,10 +54,10 @@
   (reitit/router
    [["/" {:name        :home
           :view        #'home-page
-          :controllers [{:start (fn [_] ())}]}]
+          :controllers [{:start (fn [_] (js/console.log "home controller"))}]}]
     ["/play" {:name     :play
               :view   #'play-page
-              :controllers [{:start (fn [_] ())}]}]]))
+              :controllers [{:start (fn [_] (js/console.log "play controller"))}]}]]))
 
 (defn start-router! []
   (rfe/start!
@@ -75,5 +75,5 @@
 (defn ^:export ^:dev/once init! []
   (ws/start-router! ws-handler)
   (start-router!)
-  (rf/dispatch-sync [:init-db])
+  (rf/dispatch-sync [:init-local-storage])
   (mount-root))

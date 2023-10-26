@@ -4,7 +4,18 @@
    [reitit.frontend.controllers :as rfc]
    [reitit.frontend.easy :as rfe]
    [day8.re-frame.http-fx]
-   [ajax.core :as ajax]))
+   [ajax.core :as ajax]
+   [akiroz.re-frame.storage :refer [persist-db-keys]]))
+
+(defn persisted-reg-event-db
+  [event-id handler]
+  (rf/reg-event-fx
+   event-id
+   [(persist-db-keys :seekwence-app [:games-list])]
+   (fn [{:keys [db]} event-vec]
+     {:db (handler db event-vec)})))
+
+(persisted-reg-event-db :init-local-storage (fn [db] db))
 
 (rf/reg-event-fx
  :create-game
@@ -19,13 +30,14 @@
 (rf/reg-event-fx
  :set-active-game
  (fn [{:keys [db]} [_ resp]]
-   {:db (merge db resp)
-    :fx [[:dispatch [:redirect-to-play]]]}))
+   (let [games-list (or (:games-list db) [])] 
+     {:fx [[:dispatch [:set-game-db resp]] [:dispatch [:common/redirect :play]]]})))
 
-(rf/reg-event-fx
- :redirect-to-play
- (fn [_ [_]]
-   (rfe/push-state :play)))
+(persisted-reg-event-db
+ :set-game-db
+ (fn [db [_ game]]
+   (let [games-list (or (:games-list db) [])]
+     (assoc db :games-list (conj games-list game)))))
 
 (rf/reg-sub
  :game/id
