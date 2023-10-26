@@ -1,9 +1,16 @@
 (ns ajakate.seekwence.ws
   (:require [taoensso.sente :as sente]))
 
-(let [connection (sente/make-channel-socket! "/ws" js/csrfToken {:type :auto})]
-  (def ch-chsk (:ch-recv connection)) ; ChannelSocket's receive channel
-  (def send-message! (:send-fn connection)))
+(def ws-connection (atom nil))
+
+;; TODO: can be removed
+(defn ch-chsk [] (:ch-recv @ws-connection))
+
+(defn send-message! [& args] (apply (:send-fn @ws-connection) args))
+
+(defn start-connection! [game-token]
+  (reset! ws-connection
+          (sente/make-channel-socket! "/ws" js/csrfToken {:type :auto :client-id game-token})))
 
 (defn state-handler [{:keys [?data]}]
   (.log js/console (str "state changed: " ?data)))
@@ -29,10 +36,11 @@
 (defn stop-router! []
   (when-let [stop-f @router] (stop-f)))
 
-(defn start-router! [message-handler]
+(defn start-router! [message-handler game-token]
   (stop-router!)
+  (start-connection! game-token)
   (reset! router (sente/start-chsk-router!
-                   ch-chsk
+                   (ch-chsk)
                    (event-msg-handler
                      {:message   message-handler
                       :state     state-handler

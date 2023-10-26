@@ -5,7 +5,12 @@
    [reitit.frontend.easy :as rfe]
    [day8.re-frame.http-fx]
    [ajax.core :as ajax]
+   [ajakate.seekwence.ws :as ws]
    [akiroz.re-frame.storage :refer [persist-db-keys]]))
+
+;; TODO: move
+(defn ws-handler [resp]
+  (println "response: " resp))
 
 (defn persisted-reg-event-db
   [event-id handler]
@@ -16,6 +21,16 @@
      {:db (handler db event-vec)})))
 
 (persisted-reg-event-db :init-local-storage (fn [db] db))
+
+(rf/reg-fx
+ :start-websocket
+ (fn [token]
+   (ws/start-router! ws-handler token)))
+
+(rf/reg-fx
+ :stop-websocket
+ (fn [_]
+   (ws/stop-router!)))
 
 (rf/reg-event-fx
  :create-game
@@ -29,15 +44,29 @@
 
 (rf/reg-event-fx
  :set-active-game
- (fn [{:keys [db]} [_ resp]]
-   (let [games-list (or (:games-list db) [])] 
-     {:fx [[:dispatch [:set-game-db resp]] [:dispatch [:common/redirect :play]]]})))
+ (fn [_ [_ resp]]
+   {:fx [[:dispatch [:set-game-db resp]] [:dispatch [:common/redirect :play {:game-code (:game/id resp)}]]]}))
 
 (persisted-reg-event-db
  :set-game-db
  (fn [db [_ game]]
    (let [games-list (or (:games-list db) [])]
      (assoc db :games-list (conj games-list game)))))
+
+(rf/reg-event-fx
+ :play-controller
+ (fn [{:keys [db]} [_ room-code]]
+   (let [user-token (->> (:games-list db)
+                         (filter #(= (:game/id %) room-code))
+                         (map :player/id)
+                         first)]
+     {:db (assoc db :test "me")
+      :start-websocket user-token})))
+
+(rf/reg-event-fx
+ :home-controller
+ (fn [{:keys [db]} [_ _]]
+   {:stop-websocket nil}))
 
 (rf/reg-sub
  :game/id

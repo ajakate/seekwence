@@ -54,10 +54,13 @@
   (reitit/router
    [["/" {:name        :home
           :view        #'home-page
-          :controllers [{:start (fn [_] (js/console.log "home controller"))}]}]
-    ["/play" {:name     :play
-              :view   #'play-page
-              :controllers [{:start (fn [_] (js/console.log "play controller"))}]}]]))
+          :controllers [{:start (fn [_] (rf/dispatch [:home-controller]))}]}]
+    ["/play/:game-code"
+     {:name :play
+      :view   #'play-page
+      :controllers [{:parameters {:path [:game-code]}
+                     :start (fn [{{:keys [game-code]} :path}]
+                              (rf/dispatch [:play-controller game-code]))}]}]]))
 
 (defn start-router! []
   (rfe/start!
@@ -73,7 +76,6 @@
   (d/render [#'page] (.getElementById js/document "app")))
 
 (defn ^:export ^:dev/once init! []
-  (ws/start-router! ws-handler)
   (start-router!)
   (rf/dispatch-sync [:init-local-storage])
   (mount-root))
