@@ -19,20 +19,33 @@
      [page]]))
 
 (defn home-page []
-  (let [draft_name (r/atom nil)]
+  (let [draft_name_create (r/atom nil)
+        draft_name_join (r/atom nil)
+        draft_code_join (r/atom nil)]
     (fn []
       [:div.flex.flex-col.justify-center
        [:p.m-5.font-bold.text-xl "Welcome to Seekwence!"]
        [:input
         {:type "text"
          :placeholder "sk8hkr69"
-         :on-change #(reset! draft_name (.. % -target -value))
-         :value @draft_name}]
+         :on-change #(reset! draft_name_create (.. % -target -value))
+         :value @draft_name_create}]
        [:button.m-5
-        {:on-click #(rf/dispatch [:create-game @draft_name])}
+        {:on-click #(rf/dispatch [:create-game @draft_name_create])}
         "Create a New Game"]
+       
+       [:input
+        {:type "text"
+         :placeholder "your name"
+         :on-change #(reset! draft_name_join (.. % -target -value))
+         :value @draft_name_join}]
+       [:input
+        {:type "text"
+         :placeholder "game code"
+         :on-change #(reset! draft_code_join (.. % -target -value))
+         :value @draft_code_join}]
        [:button.m-5
-        {:on-click #(ws/send-message! [:guestbook/echo "Hallo Server"])}
+        {:on-click #(rf/dispatch [:join-game @draft_name_join @draft_code_join])}
         "Join Existing Game"]])))
 
 (defn play-page []

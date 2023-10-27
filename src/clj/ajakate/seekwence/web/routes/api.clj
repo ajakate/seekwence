@@ -45,7 +45,10 @@
     {:get health/healthcheck!}]
    ["/create"
     {:post {:parameters {:body {:name string?}}
-            :handler game/create!}}]])
+            :handler game/create!}}]
+   ["/join"
+    {:post {:parameters {:body {:name string? :code string?}}
+            :handler game/join!}}]])
 
 (derive :reitit.routes/api :reitit/routes)
 

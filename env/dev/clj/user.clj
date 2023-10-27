@@ -48,5 +48,7 @@
   (reset)
   (halt)
   (+ 1 3)
+  (require '[integrant.repl.state :as state]) 
+  (def node (:db.xtdb/node state/system))
   ;;
   )
