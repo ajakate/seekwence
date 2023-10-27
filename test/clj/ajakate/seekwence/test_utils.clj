@@ -2,10 +2,7 @@
   (:require
    [ajakate.seekwence.core :as core]
    [integrant.repl.state :as state]
-   [clojure.string :as str]
-   [clojure.java.io :as io]
-   [clojure.data.json :as json]
-   [clojure.walk :as w]))
+   [xtdb.api :as xt]))
 
 (defn system-state
   []
@@ -19,9 +16,15 @@
     (f)
     (core/stop-app)))
 
-(defn covert-string [byte-array-input-stream]
-  (let [reader (io/reader byte-array-input-stream)]
-    (str/join "" (line-seq reader))))
+(def node (atom nil))
 
-(defn parse-response-body [input-byte-array]
-  (w/keywordize-keys (json/read-str (covert-string input-byte-array))))
+(defn xt-node []
+  @node)
+
+(defn xtdb-fixture []
+  (fn [f]
+    (when (not (nil? @node))
+      (.close @node))
+    (reset! node (xt/start-node {}))
+    (f)
+    (.close @node)))

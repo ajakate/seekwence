@@ -1,33 +1,35 @@
 (ns ajakate.seekwence.game-test
   (:require [clojure.test :refer :all]
-            [ring.mock.request :as mock]
-            [ajakate.seekwence.test-utils :as utils]))
+            [ajakate.seekwence.test-utils :as utils]
+            [ajakate.seekwence.web.services.game :as game]
+            [xtdb.api :as xt]))
 
-(use-fixtures :each (utils/system-fixture))
+(use-fixtures :each (utils/xtdb-fixture))
 
-(deftest test-game-create
-  (testing "GET /api/create it should return a 200"
-    (let [response ((:handler/ring (utils/system-state))
-                    (-> (mock/request :post "/api/create")
-                        (mock/json-body {:name "ajay"})))]
-      (is (= 200 (:status response)))
+(deftest test-create
+  (testing "it should create a game"
+    (let [node (utils/xt-node)
+          resp (game/create! node "ajay")]
       (is (re-matches
            #"^[A-Z0-9]{4}$"
-           (-> response
-               :body
-               utils/parse-response-body
-               :game/id))))))
+           (:game/id resp)))
+      (is (= "ajay" (:player/name resp))))))
 
-;; TODO: write test for when the db is full?
-;; https://github.com/clojure/data.generators
-;; (deftest test-game-error
-;;   (testing "GET /api/create it should not hang if bad happens"
-;;     (with-redefs [game-controller/room-code-length 2] [game-controller/room-code-chars "ABC"]
-;;                  (let [response ((:handler/ring (utils/system-state)) (mock/request :get "/api/create"))]
-;;                    (is (= 200 (:status response)))
-;;                    (is (re-matches
-;;                         #"^[A-Z0-9]{4}$"
-;;                         (-> response
-;;                             :body
-;;                             utils/parse-response-body
-;;                             :game/id)))))))
+(deftest test-join
+  (testing "it should let two people join"
+    (let [node (utils/xt-node)
+          resp1 (game/create! node "ajay")
+          game-id (:game/id resp1)
+          resp2 (game/join! node "liz" game-id)
+          entity (xt/entity (xt/db node) game-id)]
+      (is (= (:game/players entity) [(:player/id resp1) (:player/id resp2)]))
+      (is (= (:game/state entity) :init)))))
+
+(comment
+
+  (run-tests)
+
+  (run-all-tests)
+
+  ;;
+  )

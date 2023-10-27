@@ -43,6 +43,16 @@
                  :on-success       [:set-active-game]}}))
 
 (rf/reg-event-fx
+ :join-game
+ (fn [_ [_ name code]]
+   {:http-xhrio {:method           :post
+                 :uri              "/api/join"
+                 :params           {:name name :code code}
+                 :format           (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-active-game]}}))
+
+(rf/reg-event-fx
  :set-active-game
  (fn [_ [_ resp]]
    {:fx [[:dispatch [:set-game-db resp]] [:dispatch [:common/redirect :play {:game-code (:game/id resp)}]]]}))
@@ -60,12 +70,11 @@
                          (filter #(= (:game/id %) room-code))
                          (map :player/id)
                          first)]
-     {:db (assoc db :test "me")
-      :start-websocket user-token})))
+     {:start-websocket user-token})))
 
 (rf/reg-event-fx
  :home-controller
- (fn [{:keys [db]} [_ _]]
+ (fn [_ [_ _]]
    {:stop-websocket nil}))
 
 (rf/reg-sub

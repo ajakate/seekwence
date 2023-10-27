@@ -32,7 +32,6 @@
    {:packer :edn
     ;; :csrf-token-fn nil
     :user-id-fn client-id}))
-    
 
 (defn handle-message! [msg]
   ;; TODO - error handling
@@ -67,18 +66,5 @@
   [base-path (route-data opts) (ws-routes opts)])
 
 (comment 
-  
-  (def poo (atom nil))
-
-  @poo
-
-  (def wow (:a @poo))
-
-  (defn wow [] (:a @poo))
-
-  ( wow)
-
-  (reset! poo {:a 35 :b 3})
-  
   
   )
