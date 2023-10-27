@@ -19,12 +19,12 @@ jobs:
         uses: DeLaGuardo/setup-clojure@12.1
         with:
           cli: 1.11.1              # Clojure CLI based on tools.deps
-          boot: 2.8.3                  # Boot.clj
-          bb: 0.7.8                    # Babashka
-          clj-kondo: 2022.05.31        # Clj-kondo
-          cljfmt: 0.10.2               # cljfmt
-          cljstyle: 0.15.0             # cljstyle
-          zprint: 1.2.3                # zprint
+          # boot: 2.8.3                  # Boot.clj
+          # bb: 0.7.8                    # Babashka
+          # clj-kondo: 2022.05.31        # Clj-kondo
+          # cljfmt: 0.10.2               # cljfmt
+          # cljstyle: 0.15.0             # cljstyle
+          # zprint: 1.2.3                # zprint
       
       - name: Cache clojure dependencies
         uses: actions/cache@v3
