@@ -24,7 +24,7 @@ jobs:
           # clj-kondo: 2022.05.31        # Clj-kondo
           cljfmt: 0.10.2               # cljfmt
           cljstyle: 0.15.0             # cljstyle
-          zprint: 1.2.3                # zprint
+          # zprint: 1.2.3                # zprint
       
       - name: Cache clojure dependencies
         uses: actions/cache@v3
