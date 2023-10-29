@@ -1,6 +1,7 @@
 (ns ajakate.seekwence.web.services.game
   (:require
-   [xtdb.api :as xt]))
+   [xtdb.api :as xt]
+   [clojure.set :as set]))
 
 (def room-code-chars "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
@@ -21,7 +22,7 @@
 
 (defn create! [node name]
   (let [room-code (safe-room-code node)
-        player-id (random-uuid)]
+        player-id (str (random-uuid))]
     (xt/submit-tx
      node
      [[::xt/put
@@ -37,7 +38,7 @@
      :player/name name}))
 
 (defn join! [node name code] 
-  (let [player-id (random-uuid)
+  (let [player-id (str (random-uuid))
         entity (xt/entity (xt/db node) code)
         existing-players (:game/players entity)
         new-entity (assoc entity :game/players (conj existing-players player-id))]
@@ -53,11 +54,35 @@
      :player/id player-id
      :player/name name}))
 
+(defn format-player-info [node player-id]
+  (let [entity (xt/entity (xt/db node) player-id)]
+    (set/rename-keys entity {:xt/id :player/id})))
+
+(defn game-code-for-player-id [node player-id]
+  (first
+   (first
+    (xt/q (xt/db node)
+          '{:find [game-id]
+            :in [player-id]
+            :where
+            [[g :xt/id game-id]
+             [g :game/players player-id]]}
+          player-id))))
+
+(defn format-game-info [node game-code]
+  (let [game (xt/entity (xt/db node) game-code)
+        player-ids (:game/players game)
+        players (map #(format-player-info node %) player-ids)]
+    (set/rename-keys
+     (assoc game :game/players players)
+     {:xt/id :game/id})))
+
+(defn get-common-info-by-client-id [node player-id]
+  (let [game-code (game-code-for-player-id node player-id)]
+     (format-game-info node game-code)))
+
 (comment
 
-  (def node (atom nil))
-
-  (xt/entity (xt/db node) "B7OC")
 
   (require '[integrant.repl.state :as state])
   (def node (:db.xtdb/node state/system))

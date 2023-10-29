@@ -25,6 +25,22 @@
       (is (= (:game/players entity) [(:player/id resp1) (:player/id resp2)]))
       (is (= (:game/state entity) :init)))))
 
+(deftest test-get-common-info-by-player-id
+  (testing "it should find a game by player id"
+    (let [node (utils/xt-node)
+          game-resp (game/create! node "ajay")
+          player-id (:player/id game-resp)
+          game-id  (:game/id game-resp)
+          game-resp2 (game/join! node "liz" game-id)]
+      (is (= (game/get-common-info-by-client-id node player-id)
+             {:game/state :init
+              :game/id game-id
+              :game/players
+              [{:player/name "ajay"
+                :player/id (:player/id game-resp)}
+               {:player/name "liz"
+                :player/id (:player/id game-resp2)}]})))))
+
 (comment
 
   (run-tests)

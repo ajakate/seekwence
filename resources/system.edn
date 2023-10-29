@@ -67,4 +67,5 @@
  :sente/router {:connection #ig/ref :sente/connection}
  :reitit.routes/ws {:base-path "/ws",
                     :env #ig/ref :system/env,
+                    :db #ig/ref :db.xtdb/node
                     :connection #ig/ref :sente/connection}}

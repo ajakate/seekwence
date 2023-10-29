@@ -1,12 +1,14 @@
 (ns ajakate.seekwence.web.routes.ws
-  (:require
-   [reitit.ring.middleware.parameters :as parameters]
-   [taoensso.sente :as sente]
-   [taoensso.sente.server-adapters.undertow :refer [get-sch-adapter]]
-   [integrant.core :as ig]))
+  (:require [ajakate.seekwence.web.services.game :as game]
+            [integrant.core :as ig]
+            [taoensso.sente :as sente]
+            [taoensso.sente.server-adapters.undertow :refer [get-sch-adapter]]))
    
 (defn client-id [ring-req]
   (get-in ring-req [:params :client-id]))
+
+(defn db-node [ring-req]
+  (get-in ring-req [:ring-req :reitit.core/match :data :db]))
 
 (defmulti on-message :id)
 
@@ -24,6 +26,12 @@
   (let [response (str "Hello to everyone from the client " client-id)]
    (doseq [uid (:any @connected-uids)]
      (send-fn uid [id response]))))
+
+(defmethod on-message :seekwence/game-info
+  [{:keys [id client-id ?data send-fn] :as message}]
+  (let [node (db-node message)
+        resp (game/get-common-info-by-client-id node client-id)]
+    (send-fn client-id [id resp])))
 
 (defmethod ig/init-key :sente/connection
   [_ opts]
