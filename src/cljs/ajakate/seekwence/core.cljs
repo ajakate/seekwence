@@ -53,7 +53,7 @@
     [:div.flex.flex-co
      [:h1.m-1 (str "Welcome to Game " game-code)]
      [:button.m-5
-      {:on-click #(ws/send-message! [:guestbook/broadcast "Hallo Server"])}
+      {:on-click #(rf/dispatch [:get-game-info])}
       "click me"]]))
 
 ;; -------------------------

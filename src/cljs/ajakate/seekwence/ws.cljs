@@ -1,12 +1,16 @@
 (ns ajakate.seekwence.ws
-  (:require [taoensso.sente :as sente]))
+  (:require [taoensso.sente :as sente]
+            [re-frame.core :as rf]))
 
 (def ws-connection (atom nil))
 
 ;; TODO: can be removed
 (defn ch-chsk [] (:ch-recv @ws-connection))
 
-(defn send-message! [& args] (apply (:send-fn @ws-connection) args))
+(enable-console-print!)
+
+(defn send-message! [& args]
+  (apply (:send-fn @ws-connection) args))
 
 (defn start-connection! [game-token]
   (reset! ws-connection
@@ -16,7 +20,8 @@
   (.log js/console (str "state changed: " ?data)))
 
 (defn handshake-handler [{:keys [?data]}]
-  (.log js/console (str "connection established: " ?data)))
+  (.log js/console (str "connection established: " ?data))
+  (rf/dispatch [:get-game-info]))
 
 (defn default-event-handler [ev-msg]
   (.log js/console (str "Unhandled event: " (:event ev-msg))))

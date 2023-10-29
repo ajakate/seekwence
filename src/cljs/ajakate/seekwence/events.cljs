@@ -8,9 +8,23 @@
    [ajakate.seekwence.ws :as ws]
    [akiroz.re-frame.storage :refer [persist-db-keys]]))
 
-;; TODO: move
+(enable-console-print!)
+
 (defn ws-handler [resp]
-  (println "response: " resp))
+  (let [[id response] (second (:event resp))]
+    (rf/dispatch [:handle-websocket-event id response])
+    (println "response: " resp)))
+
+(rf/reg-event-fx
+ :handle-websocket-event
+ (fn [_ [_ id response]]
+   (let [handler (keyword (str "ws-handler/" (name id)))]
+     {:fx [[:dispatch [handler response]]]})))
+
+(rf/reg-event-fx
+ :ws-handler/game-info
+ (fn [{:keys [db]} [_ response]]
+   {:db (merge db response)}))
 
 (defn persisted-reg-event-db
   [event-id handler]
@@ -26,6 +40,16 @@
  :start-websocket
  (fn [token]
    (ws/start-router! ws-handler token)))
+
+(rf/reg-fx
+ :websocket
+ (fn [[path & message]]
+   (ws/send-message! [path message])))
+
+(rf/reg-event-fx
+ :get-game-info
+ (fn [_ [_ _]]
+   {:websocket [:seekwence/game-info]}))
 
 (rf/reg-fx
  :stop-websocket
