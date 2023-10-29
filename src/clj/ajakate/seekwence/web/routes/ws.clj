@@ -28,10 +28,13 @@
      (send-fn uid [id response]))))
 
 (defmethod on-message :seekwence/game-info
-  [{:keys [id client-id ?data send-fn] :as message}]
+  [{:keys [id client-id ?data send-fn connected-uids] :as message}]
   (let [node (db-node message)
         resp (game/get-common-info-by-client-id node client-id)]
-    (send-fn client-id [id resp])))
+    (send-fn client-id [id resp])
+    (doseq [uid (:any @connected-uids)]
+      (when (= (game/game-code-for-player-id node uid) (:game/id resp))
+        (send-fn uid [id resp])))))
 
 (defmethod ig/init-key :sente/connection
   [_ opts]
