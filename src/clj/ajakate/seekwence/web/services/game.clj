@@ -81,6 +81,26 @@
   (let [game-code (game-code-for-player-id node player-id)]
      (format-game-info node game-code)))
 
+(defn set-team [node player-id team]
+  (let [player (xt/entity (xt/db node) player-id)
+        new-entity (assoc player :player/team team)]
+    (xt/submit-tx
+     node
+     [[::xt/put
+       new-entity]])
+    (xt/sync node)
+    (get-common-info-by-client-id node player-id)))
+
+(defn start-game [node game-code]
+  (let [game (xt/entity (xt/db node) game-code)
+        new-game (assoc game :game/state :play)]
+    (xt/submit-tx
+     node
+     [[::xt/put
+       new-game]])
+    (xt/sync node)
+    (format-game-info node game-code)))
+
 (comment
 
 

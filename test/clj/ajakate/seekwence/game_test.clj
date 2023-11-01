@@ -41,6 +41,14 @@
                {:player/name "liz"
                 :player/id (:player/id game-resp2)}]})))))
 
+(deftest test-team-join
+  (testing "it should assign a team to a player"
+    (let [node (utils/xt-node)
+          game-resp (game/create! node "ajay")
+          player-id (:player/id game-resp)
+          resp (game/set-team node player-id "Blue")] 
+      (is (= (-> resp :game/players first :player/team) "Blue")))))
+
 (comment
 
   (run-tests)
