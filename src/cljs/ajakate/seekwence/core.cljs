@@ -46,15 +46,34 @@
          :value @draft_code_join}]
        [:button.m-5
         {:on-click #(rf/dispatch [:join-game @draft_name_join @draft_code_join])}
-        "Join Existing Game"]])))
+        "Join Existing Game"]
+       [:h1 "Existing Games"]
+       [:table
+        (let [games-list @(rf/subscribe [:games-list])]
+          [:tbody
+           (for [game games-list]
+             ^{:key (:game/id game)}
+             [:tr (:game/id game) " " (:player/name game) " " 
+              [:button.m-5
+               {:on-click #(rf/dispatch [:delete-game (:game/id game)])}
+               "Delete"]])])]])))
 
 (defn play-page []
-  (let [game-code @(rf/subscribe [:game/id])]
-    [:div.flex.flex-co
+  (let [game-code @(rf/subscribe [:game/id])
+        players  @(rf/subscribe [:game/players])]
+    [:div.flex.flex-col
      [:h1.m-1 (str "Welcome to Game " game-code)]
+     [:table
+      [:tbody
+       (for [player players]
+         ^{:key (:player/id player)}
+         [:tr (:player/name player) " " (:player/team player)])]]
      [:button.m-5
-      {:on-click #(rf/dispatch [:get-game-info])}
-      "click me"]]))
+      {:on-click #(rf/dispatch [:set-teams])}
+      "set teams"]
+     [:button.m-5
+      {:on-click #(rf/dispatch [:start-game])}
+      "start game"]]))
 
 ;; -------------------------
 ;; Initialize app

@@ -72,3 +72,5 @@
 
    "J"
    "J"])
+
+(def teams ["Red", "Green", "Blue"])

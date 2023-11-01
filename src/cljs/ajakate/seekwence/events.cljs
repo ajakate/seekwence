@@ -26,6 +26,16 @@
  (fn [{:keys [db]} [_ response]]
    {:db (merge db response)}))
 
+(rf/reg-event-fx
+ :ws-handler/set-team
+ (fn [{:keys [db]} [_ response]]
+   {:db (merge db response)}))
+
+(rf/reg-event-fx
+ :ws-handler/start-game
+ (fn [{:keys [db]} [_ response]]
+   {:db (merge db response)}))
+
 (defn persisted-reg-event-db
   [event-id handler]
   (rf/reg-event-fx
@@ -50,6 +60,11 @@
  :get-game-info
  (fn [_ [_ _]]
    {:websocket [:seekwence/game-info]}))
+
+(rf/reg-event-fx
+ :start-game
+ (fn [_ [_ _]]
+   {:websocket [:seekwence/start-game]}))
 
 (rf/reg-fx
  :stop-websocket
@@ -99,9 +114,40 @@
 (rf/reg-event-fx
  :home-controller
  (fn [_ [_ _]]
-   {:stop-websocket nil}))
+   {:stop-websocket nil
+    :fx [[:dispatch :sync-existing-games]]}))
+
+(rf/reg-event-fx
+ :sync-existing-games
+ (fn [_ [_ _]]))
+
+(rf/reg-event-fx
+ :set-teams
+ (fn [{:keys [db]} [_ _]]
+   (let [player-ids (map :player/id (:game/players db))]
+     {:fx [[:dispatch [:set-team (first player-ids) "Red"]] [:dispatch [:set-team (second player-ids) "Green"]]]})))
+
+(rf/reg-event-fx
+ :set-team
+ (fn [_ [_ player-id color]]
+   {:websocket [:seekwence/set-team {:player/id player-id :player/team color}]}))
+
+(persisted-reg-event-db
+ :delete-game
+ (fn [db [_ game-id]]
+   (assoc db :games-list (filter #(not= (:game/id %) game-id) (:games-list db)))))
 
 (rf/reg-sub
  :game/id
  (fn [db _]
    (-> db :game/id)))
+
+(rf/reg-sub
+ :game/players
+ (fn [db _]
+   (-> db :game/players)))
+
+(rf/reg-sub
+ :games-list
+ (fn [db _]
+   (-> db :games-list)))
