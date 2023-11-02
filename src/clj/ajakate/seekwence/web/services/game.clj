@@ -1,7 +1,9 @@
 (ns ajakate.seekwence.web.services.game
   (:require
    [xtdb.api :as xt]
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [ajakate.seekwence.constants :as c]
+   [ajakate.seekwence.web.services.game :as game]))
 
 (def room-code-chars "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
@@ -91,19 +93,52 @@
     (xt/sync node)
     (get-common-info-by-client-id node player-id)))
 
+(defn deal-deck [player-ids]
+  (let [deck (shuffle (concat c/deck c/deck))
+        num-players (count player-ids)
+        deal-count (c/cards-to-deal num-players)
+        total-cards-to-deal (* deal-count num-players)
+        [cards-to-deal remaining-deck] (split-at total-cards-to-deal deck)]
+    [(zipmap player-ids (partition deal-count cards-to-deal)) remaining-deck]))
+
 (defn start-game [node game-code]
   (let [game (xt/entity (xt/db node) game-code)
-        new-game (assoc game :game/state :play)]
+        player-ids (:game/players game)
+        [hands deck] (deal-deck player-ids)
+        game-txn [[::xt/put
+                   (assoc game
+                          :game/state :play
+                          :game/deck deck
+                          :game/turn 0
+                          :game/moves [])]]
+        player-txn (map
+                    (fn [[player-id hand]]
+                      (let [entity (xt/entity (xt/db node) player-id)]
+                        [::xt/put
+                         (assoc entity :player/hand hand)]))
+                    hands)
+        txn (concat game-txn player-txn)]
     (xt/submit-tx
      node
-     [[::xt/put
-       new-game]])
+     txn)
     (xt/sync node)
     (format-game-info node game-code)))
 
-(comment
+(defn format-for-player [game-info player-id]
+  (let [players (map
+                 (fn [player]
+                   (if (= (:player/id player) player-id)
+                     player
+                     (dissoc player :player/hand)))
+                 (:game/players game-info))
+        game (dissoc game-info :game/deck)]
+    (assoc game :game/players players)))
 
+(comment 
 
+  (xt/entity (xt/db node) "S850")
+
+  node
   (require '[integrant.repl.state :as state])
   (def node (:db.xtdb/node state/system))
 

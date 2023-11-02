@@ -12,9 +12,11 @@
 
 (defmulti on-message :id)
 
+;; TODO: fix this
 (defmethod on-message :default
   [{:keys [id client-id ?data] :as message}]
-  (println "on-message: id: " id "  cilient-id: " client-id " ?data: " ?data))
+  ;; (println "on-message: id: " id "  cilient-id: " client-id " ?data: " ?data)
+  )
 
 (defmethod on-message :guestbook/echo
   [{:keys [id client-id ?data send-fn] :as message}]
@@ -27,14 +29,17 @@
    (doseq [uid (:any @connected-uids)]
      (send-fn uid [id response]))))
 
+(defn format-and-send-message [uid id resp node send-fn]
+  (when (= (game/game-code-for-player-id node uid) (:game/id resp))
+    (send-fn uid [id (game/format-for-player resp uid)])))
+
 ;; TODO: refactor these... test?
 (defmethod on-message :seekwence/game-info
   [{:keys [id client-id ?data send-fn connected-uids] :as message}]
   (let [node (db-node message)
         resp (game/get-common-info-by-client-id node client-id)]
     (doseq [uid (:any @connected-uids)]
-      (when (= (game/game-code-for-player-id node uid) (:game/id resp))
-        (send-fn uid [id resp])))))
+      (format-and-send-message uid id resp node send-fn))))
 
 
 (defmethod on-message :seekwence/set-team
@@ -43,8 +48,7 @@
         body (first ?data)
         resp (game/set-team node (:player/id body) (:player/team body))]
     (doseq [uid (:any @connected-uids)]
-      (when (= (game/game-code-for-player-id node uid) (:game/id resp))
-        (send-fn uid [id resp])))))
+      (format-and-send-message uid id resp node send-fn))))
 
 (defmethod on-message :seekwence/start-game
   [{:keys [id client-id ?data send-fn connected-uids] :as message}]
@@ -52,8 +56,7 @@
         game-code (game/game-code-for-player-id node client-id)
         resp (game/start-game node game-code)]
     (doseq [uid (:any @connected-uids)]
-      (when (= (game/game-code-for-player-id node uid) (:game/id resp))
-        (send-fn uid [id resp])))))
+      (format-and-send-message uid id resp node send-fn))))
 
 (defmethod ig/init-key :sente/connection
   [_ opts]

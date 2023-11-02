@@ -46,8 +46,48 @@
     (let [node (utils/xt-node)
           game-resp (game/create! node "ajay")
           player-id (:player/id game-resp)
-          resp (game/set-team node player-id "Blue")] 
+          resp (game/set-team node player-id "Blue")]
       (is (= (-> resp :game/players first :player/team) "Blue")))))
+
+(deftest start-game
+  (testing "it should start the game and deal out the deck properly"
+    (let [node (utils/xt-node)
+          resp1 (game/create! node "ajay")
+          ajay-id (:player/id resp1)
+          game-id (:game/id resp1)
+          resp2 (game/join! node "liz" game-id)
+          liz-id (:player/id resp2)
+          _ (game/start-game node game-id)
+          game-entity (xt/entity (xt/db node) game-id)
+          ajay-entity (xt/entity (xt/db node) ajay-id)
+          liz-entity (xt/entity (xt/db node) liz-id)
+          deck-length (count (:game/deck game-entity))
+          ajay-length (count (:player/hand ajay-entity))
+          liz-length (count (:player/hand liz-entity))]
+      (is (= (:game/state game-entity) :play))
+      (is (= (:game/turn game-entity) 0))
+      (is (= ajay-length 7))
+      (is (= liz-length 7))
+      (is (= deck-length 90)))))
+
+(deftest format-for-player
+  (testing "it should hide the deck and other player hand info"
+    (let [node (utils/xt-node)
+          resp1 (game/create! node "ajay")
+          ajay-id (:player/id resp1)
+          game-id (:game/id resp1)
+          resp2 (game/join! node "liz" game-id)
+          liz-id (:player/id resp2)
+          resp (game/start-game node game-id)
+          ajay-resp (game/format-for-player resp ajay-id)
+          liz-resp (game/format-for-player resp liz-id)]
+      (println ajay-resp)
+      (is (= (:game/deck ajay-resp) nil))
+      (is (= (:game/deck liz-resp) nil))
+      (is (= (count (:player/hand (first (:game/players ajay-resp)))) 7))
+      (is (= (:player/hand (second (:game/players ajay-resp))) nil))
+      (is (= (count (:player/hand (second (:game/players liz-resp)))) 7))
+      (is (= (:player/hand (first (:game/players liz-resp))) nil)))))
 
 (comment
 

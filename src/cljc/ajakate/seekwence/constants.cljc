@@ -68,9 +68,17 @@
    "JC"
    "QC"
    "KC"
-   "AC"
-
-   "J"
-   "J"])
+   "AC"])
 
 (def teams ["Red", "Green", "Blue"])
+
+(defn cards-to-deal [num-players]
+  (case num-players
+    2 7
+    3 6
+    4 6
+    6 5
+    8 4
+    9 4
+    10 3
+    12 3))

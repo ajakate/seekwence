@@ -151,3 +151,8 @@
  :games-list
  (fn [db _]
    (-> db :games-list)))
+
+(rf/reg-sub
+ :game/state
+ (fn [db _]
+   (-> db :game/state)))

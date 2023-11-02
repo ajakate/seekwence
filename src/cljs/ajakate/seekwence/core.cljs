@@ -7,7 +7,7 @@
    [day8.re-frame.http-fx]
    [reitit.frontend.easy :as rfe]
    [reitit.core :as reitit]
-   [ajakate.seekwence.ws :as ws]
+   [ajakate.seekwence.pages.play :as play-page]
    [reagent.dom :as d]))
 
 ;; -------------------------
@@ -60,20 +60,25 @@
 
 (defn play-page []
   (let [game-code @(rf/subscribe [:game/id])
-        players  @(rf/subscribe [:game/players])]
+        players  @(rf/subscribe [:game/players])
+        game-state @(rf/subscribe [:game/state])]
     [:div.flex.flex-col
      [:h1.m-1 (str "Welcome to Game " game-code)]
-     [:table
-      [:tbody
-       (for [player players]
-         ^{:key (:player/id player)}
-         [:tr (:player/name player) " " (:player/team player)])]]
-     [:button.m-5
-      {:on-click #(rf/dispatch [:set-teams])}
-      "set teams"]
-     [:button.m-5
-      {:on-click #(rf/dispatch [:start-game])}
-      "start game"]]))
+     (case game-state
+       :init
+       [:div
+        [:table
+         [:tbody
+          (for [player players]
+            ^{:key (:player/id player)}
+            [:tr (:player/name player) " " (:player/team player)])]]
+        [:button.m-5
+         {:on-click #(rf/dispatch [:set-teams])}
+         "set teams"]
+        [:button.m-5
+         {:on-click #(rf/dispatch [:start-game])}
+         "start game"]]
+       [play-page/render])]))
 
 ;; -------------------------
 ;; Initialize app
@@ -99,9 +104,6 @@
    router
    navigate!
    {}))
-
-(defn ws-handler [resp]
-  (println "response: " resp))
 
 (defn ^:dev/after-load mount-root []
   (rf/clear-subscription-cache!)
